@@ -9,14 +9,13 @@ update:
   serial: false
 
 jobs:
-  - name: just_install_packages
+  - name: shell
     templates:
-    - name: just_install_packages
-      release: shell
+      - { release: shell, name: shell }
     instances: 1
     persistent_disk: 0
     resource_pool: small_z1
-    networks: (( param "please set just_install_package networks" ))
+    networks: (( param "please set shell networks" ))
 
 networks: (( param "please set networks" ))
 
