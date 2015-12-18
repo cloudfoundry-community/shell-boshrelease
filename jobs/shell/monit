@@ -1,0 +1,2 @@
+check file user-created with path /var/vcap/sys/run/shell
+  if does not exist then exec /var/vcap/jobs/shell/bin/setup

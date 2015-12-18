@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+source "$(dirname $(dirname ${0}))/shell/env"
+
+if [[ $UID != 0 ]]; then
+  echo >&2 "$0: must be run as root!"
+  exit 1
+fi
+
+log() {
+	echo >&2 "[$(date +'%Y%m%d %HH%MM.%SS')] shell/setup[$$]: " $*
+}
+
+set -e
+
+log "Setting hostname to <%= p('shell.hostname') %>"
+echo "<%= p('shell.hostname') %>" > /etc/hostname
+hostname -b -F /etc/hostname
+
+log "Setting up /etc/hosts"
+<% p('shell.hosts').each do |line| %>
+if ! grep -q '^<%= line %>$' /etc/hosts; then
+  echo "<%= line %>" >> /etc/hosts
+fi
+<% end %>
+
+NEW_USER="<%= p('shell.user.account') %>"
+NEW_HOME="/home/${NEW_USER}"
+NEW_SHELL="<%= p('shell.user.shell') %>"
+ENV_REPO="<%= p('shell.env.repo') %>"
+
+log "Setting up user ${NEW_USER}"
+if ! grep -q "^${NEW_USER}:" /etc/passwd; then
+  log "User ${NEW_USER} does not exist; adding"
+  /usr/sbin/useradd -m -d ${NEW_HOME} -s ${NEW_SHELL} ${NEW_USER}
+fi
+
+log "Setting up sudoers access for ${NEW_USER}"
+if ! grep -q "^${NEW_USER} " /etc/sudoers; then
+  log "Access not found; configuring ${NEW_USER} with NOPASSWD:ALL access"
+  (echo; echo "${NEW_USER} ALL=(ALL:ALL) NOPASSWD:ALL") >> /etc/sudoers
+  chmod 0400 /etc/sudoers
+fi
+
+log "Setting up ${NEW_USER} SSH authorized keys"
+mkdir -p ${NEW_HOME}/.ssh
+chmod 0700 ${NEW_HOME}/.ssh
+touch ${NEW_HOME}/.ssh/authorized_keys
+<% p('shell.user.ssh_keys').each do |key| %>
+if ! grep -q '^<%= key %>$' ${NEW_HOME}/.ssh/authorized_keys; then
+  echo "<%= key %>" >> ${NEW_HOME}/.ssh/authorized_keys
+fi
+<% end %>
+chown -R ${NEW_USER} ${NEW_HOME}
+
+log "Setting up ${NEW_USER} environment"
+if [[ ! -d ${NEW_HOME}/env ]]; then
+  log "Environment repo ${NEW_HOME}/env not found; cloning from upstream"
+
+  if [[ "$(command -v git)" == "" ]]; then
+    log "git binary not found; installing from system packages"
+    DIST=$(lsb_release -si)
+    case ${DIST} in
+        (Ubuntu)
+            sudo apt-get update
+            sudo apt-get install -y git
+            ;;
+        (*)
+            echo >&2 "Unsupported OS: ${DIST}"
+            exit 2
+            ;;
+    esac
+  fi
+
+  log "Cloning ${ENV_REPO} into ${NEW_HOME}/env"
+  git clone ${ENV_REPO} ${NEW_HOME}/env
+
+  log "Running install script form inside of ${NEW_HOME}/env, as ${NEW_USER} with HOME=${NEW_HOME}"
+  (cd ${NEW_HOME}/env
+   export HOME=${NEW_HOME}
+   export USER=${NEW_USER}
+   [ -x ./install ] && ./install)
+fi
+
+chown -R ${NEW_USER} ${NEW_HOME}
+touch /var/vcap/sys/run/shell
+log "Done"

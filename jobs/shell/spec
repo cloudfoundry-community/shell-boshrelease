@@ -1,0 +1,32 @@
+---
+name: shell
+packages: []
+templates:
+  bin/setup: bin/setup
+
+properties:
+  shell.hostname:
+    description: "Enable debug output, can be 'true' or 'false' (default)."
+    default: "false"
+
+  shell.hostname:
+    description: "Hostname to set on the shell"
+    default: "shell.local"
+
+  shell.user.account:
+    description: "Name of the user account to provision for this shell"
+    default: "user"
+  shell.user.shell:
+    description: "Shell for the user account"
+    default: "/bin/bash"
+  shell.user.ssh_keys:
+    description: "List of SSH Public Keys for connecting to the shell"
+    default: []
+
+  shell.env.repo:
+    description: "URL of a publicly-accessible shell environment repo"
+    default: "https://github.com/filefrog/shell-env"
+
+  shell.hosts:
+    description: "A list of entries to append to /etc/hosts"
+    default: []
