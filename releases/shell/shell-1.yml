@@ -1,0 +1,15 @@
+---
+packages: []
+jobs:
+- name: shell
+  version: 17509e98c1ed5f7c93727adb72133328b085a957
+  fingerprint: 17509e98c1ed5f7c93727adb72133328b085a957
+  sha1: 072d42cf92be7ed4668e6289acf073ddee398144
+license:
+  version: add99949ee372a5e7a9f71f37eade757c23cb057
+  fingerprint: add99949ee372a5e7a9f71f37eade757c23cb057
+  sha1: ca1da2f4883218575f8bd8cf1957f62d17d13d8b
+commit_hash: 6cccb8b5
+uncommitted_changes: true
+name: shell
+version: '1'
