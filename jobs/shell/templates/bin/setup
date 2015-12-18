@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-
-source "$(dirname $(dirname ${0}))/shell/env"
+exec </dev/null >>/var/vcap/sys/log/shell.log 2>&1
 
 if [[ $UID != 0 ]]; then
   echo >&2 "$0: must be run as root!"
@@ -12,6 +11,7 @@ log() {
 }
 
 set -e
+set -x
 
 log "Setting hostname to <%= p('shell.hostname') %>"
 echo "<%= p('shell.hostname') %>" > /etc/hostname
@@ -79,7 +79,7 @@ if [[ ! -d ${NEW_HOME}/env ]]; then
   (cd ${NEW_HOME}/env
    export HOME=${NEW_HOME}
    export USER=${NEW_USER}
-   [ -x ./install ] && ./install)
+   [ -x ./install ] && ./install || true)
 fi
 
 chown -R ${NEW_USER} ${NEW_HOME}

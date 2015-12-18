@@ -6,10 +6,6 @@ templates:
 
 properties:
   shell.hostname:
-    description: "Enable debug output, can be 'true' or 'false' (default)."
-    default: "false"
-
-  shell.hostname:
     description: "Hostname to set on the shell"
     default: "shell.local"
 
@@ -25,7 +21,7 @@ properties:
 
   shell.env.repo:
     description: "URL of a publicly-accessible shell environment repo"
-    default: "https://github.com/filefrog/shell-env"
+    default: "https://github.com/filefrog/env.git"
 
   shell.hosts:
     description: "A list of entries to append to /etc/hosts"
