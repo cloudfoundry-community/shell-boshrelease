@@ -1,0 +1,21 @@
+set -e # exit immediately if a simple command exits with a non-zero status
+set -u # report the usage of uninitialized variables
+
+# Detect # of CPUs so make jobs can be parallelized
+CPUS=$(grep -c ^processor /proc/cpuinfo)
+ # Available variables
+# $BOSH_COMPILE_TARGET - where this package & spec'd source files are available
+# $BOSH_INSTALL_TARGET - where you copy/install files to be included in package
+export HOME=/var/vcap
+
+#
+# NOTE: new versions of git can be found on the official
+#       download page: https://github.com/git/git/releases
+#       (however, you will have to unpack, run `autoconf`
+#        and then repack the tarball for this to work.)
+#
+
+tar xzf git/git-2.7.0.tar.gz
+(cd git-2.7.0
+ ./configure --prefix=${BOSH_INSTALL_TARGET}
+ make -j $CPUS install)

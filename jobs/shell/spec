@@ -1,6 +1,7 @@
 ---
 name: shell
-packages: []
+packages:
+  - git
 templates:
   bin/setup: bin/setup
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 exec </dev/null >>/var/vcap/sys/log/shell.log 2>&1
+export PATH=$PATH:/var/vcap/packages/git/bin
 
 if [[ $UID != 0 ]]; then
   echo >&2 "$0: must be run as root!"
@@ -56,23 +57,6 @@ chown -R ${NEW_USER} ${NEW_HOME}
 log "Setting up ${NEW_USER} environment"
 if [[ ! -d ${NEW_HOME}/env ]]; then
   log "Environment repo ${NEW_HOME}/env not found; cloning from upstream"
-
-  if [[ "$(command -v git)" == "" ]]; then
-    log "git binary not found; installing from system packages"
-    DIST=$(lsb_release -si)
-    case ${DIST} in
-        (Ubuntu)
-            sudo apt-get update
-            sudo apt-get install -y git
-            ;;
-        (*)
-            echo >&2 "Unsupported OS: ${DIST}"
-            exit 2
-            ;;
-    esac
-  fi
-
-  log "Cloning ${ENV_REPO} into ${NEW_HOME}/env"
   git clone ${ENV_REPO} ${NEW_HOME}/env
 
   log "Running install script form inside of ${NEW_HOME}/env, as ${NEW_USER} with HOME=${NEW_HOME}"
