@@ -21,7 +21,6 @@ properties:
 
   shell.env.repo:
     description: "URL of a publicly-accessible shell environment repo"
-    default: "https://github.com/filefrog/env.git"
 
   shell.hosts:
     description: "A list of entries to append to /etc/hosts"

@@ -27,7 +27,6 @@ fi
 NEW_USER="<%= p('shell.user.account') %>"
 NEW_HOME="/home/${NEW_USER}"
 NEW_SHELL="<%= p('shell.user.shell') %>"
-ENV_REPO="<%= p('shell.env.repo') %>"
 
 log "Setting up user ${NEW_USER}"
 if ! grep -q "^${NEW_USER}:" /etc/passwd; then
@@ -52,6 +51,10 @@ if ! grep -q '^<%= key %>$' ${NEW_HOME}/.ssh/authorized_keys; then
 fi
 <% end %>
 chown -R ${NEW_USER} ${NEW_HOME}
+
+<% if_p("shell.env.repo") do |env_repo| %>
+
+ENV_REPO="<%= env_repo %>"
 
 log "Setting up ${NEW_USER} environment"
 if [[ ! -d ${NEW_HOME}/env ]]; then
@@ -81,6 +84,8 @@ if [[ ! -d ${NEW_HOME}/env ]]; then
    export USER=${NEW_USER}
    [ -x ./install ] && ./install || true)
 fi
+
+<% end %>
 
 chown -R ${NEW_USER} ${NEW_HOME}
 touch /var/vcap/sys/run/shell
