@@ -1,0 +1,20 @@
+---
+packages:
+- name: git
+  version: dc739eb9fd28e78bfb1d7048a29b8e4261df929f
+  fingerprint: dc739eb9fd28e78bfb1d7048a29b8e4261df929f
+  sha1: b669d3026c971b29630ce355208ab4dfd62c61be
+  dependencies: []
+jobs:
+- name: shell
+  version: bca6e5470fd94824653d37b8a393769d6d4f3f32
+  fingerprint: bca6e5470fd94824653d37b8a393769d6d4f3f32
+  sha1: d13f5af3c01753df25bdbd78c0bade58dad582a6
+license:
+  version: add99949ee372a5e7a9f71f37eade757c23cb057
+  fingerprint: add99949ee372a5e7a9f71f37eade757c23cb057
+  sha1: ca1da2f4883218575f8bd8cf1957f62d17d13d8b
+commit_hash: 4954f084
+uncommitted_changes: true
+name: shell
+version: '2'
