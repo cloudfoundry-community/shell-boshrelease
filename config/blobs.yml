@@ -1,1 +1,5 @@
---- {}
+---
+git/git-2.7.0.tar.gz:
+  object_id: 53fdaaa7-b140-4d3f-b6ce-a7d9e60b7f4a
+  sha: 41585a0447a03e62dd07473249a3a5f9b379c548
+  size: 5718519
