@@ -16,6 +16,20 @@ jobs:
     persistent_disk: 0
     resource_pool: small_z1
     networks: (( param "please set shell networks" ))
+    properties:
+      shell:
+        users:
+          - name: juser
+          - name: alice
+            shell: /bin/zsh
+            ssh_keys:
+              - ssh-rsa ABCDEF
+          - name: bob
+            env: https://github.com/jhunt/env.git
+            ssh_keys:
+              - ssh-rsa ABCDEF
+              - ssh-rsa 123456
+
 
 networks: (( param "please set networks" ))
 

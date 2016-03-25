@@ -8,11 +8,61 @@ if [[ $UID != 0 ]]; then
 fi
 
 log() {
-	echo >&2 "[$(date +'%Y%m%d %HH%MM.%SS')] shell/setup[$$]: " $*
+  echo >&2 "[$(date +'%Y%m%d %HH%MM.%SS')] shell/setup[$$]: " $*
+}
+
+newuser() {
+  user=$1  ; shift
+  shell=$1 ; shift
+  repo=$1  ; shift
+
+  home="/home/${user}"
+  [ -z ${shell} ] && shell="/bin/bash"
+
+  log "Setting up user ${user}"
+  if ! grep -q "^${user}:" /etc/passwd; then
+    log "User ${user} does not exist; adding"
+    /usr/sbin/useradd -m -d ${home} -s ${shell} ${user}
+  fi
+
+  log "Setting up sudoers access for ${user}"
+  if ! grep -q "^${user} " /etc/sudoers; then
+    log "Access not found; configuring ${user} with NOPASSWD:ALL access"
+    (echo; echo "${user} ALL=(ALL:ALL) NOPASSWD:ALL") >> /etc/sudoers
+    chmod 0400 /etc/sudoers
+  fi
+
+  if [[ $# -gt 0 ]]; then
+    log "Setting up ${user} SSH authorized keys"
+    mkdir -p ${home}/.ssh
+    chmod 0700 ${home}/.ssh
+    touch ${home}/.ssh/authorized_keys
+    for key in "$@"; do
+      if ! grep -q "^$key$" ${home}/.ssh/authorized_keys; then
+        echo "$key" >> ${home}/.ssh/authorized_keys
+      fi
+    done
+  fi
+  chown -R ${user} ${home}
+
+  if [[ -n "${repo}" ]]; then
+    log "Setting up ${user} environment"
+    if [[ ! -d ${home}/env ]]; then
+      log "Environment repo ${home}/env not found; cloning from upstream"
+      git clone ${repo} ${home}/env
+
+      log "Running install script form inside of ${home}/env, as ${user} with HOME=${home}"
+      (cd ${home}/env
+       export HOME=${home}
+       export USER=${user}
+       [ -x ./install ] && ./install || true)
+    fi
+  fi
+
+  chown -R ${user} ${home}
 }
 
 set -e
-set -x
 
 log "Setting hostname to <%= p('shell.hostname') %>"
 echo "<%= p('shell.hostname') %>" > /etc/hostname
@@ -25,52 +75,21 @@ if ! grep -q '^<%= line %>$' /etc/hosts; then
 fi
 <% end %>
 
-NEW_USER="<%= p('shell.user.account') %>"
-NEW_HOME="/home/${NEW_USER}"
-NEW_SHELL="<%= p('shell.user.shell') %>"
-
-log "Setting up user ${NEW_USER}"
-if ! grep -q "^${NEW_USER}:" /etc/passwd; then
-  log "User ${NEW_USER} does not exist; adding"
-  /usr/sbin/useradd -m -d ${NEW_HOME} -s ${NEW_SHELL} ${NEW_USER}
-fi
-
-log "Setting up sudoers access for ${NEW_USER}"
-if ! grep -q "^${NEW_USER} " /etc/sudoers; then
-  log "Access not found; configuring ${NEW_USER} with NOPASSWD:ALL access"
-  (echo; echo "${NEW_USER} ALL=(ALL:ALL) NOPASSWD:ALL") >> /etc/sudoers
-  chmod 0400 /etc/sudoers
-fi
-
-log "Setting up ${NEW_USER} SSH authorized keys"
-mkdir -p ${NEW_HOME}/.ssh
-chmod 0700 ${NEW_HOME}/.ssh
-touch ${NEW_HOME}/.ssh/authorized_keys
-<% p('shell.user.ssh_keys').each do |key| %>
-if ! grep -q '^<%= key %>$' ${NEW_HOME}/.ssh/authorized_keys; then
-  echo "<%= key %>" >> ${NEW_HOME}/.ssh/authorized_keys
-fi
-<% end %>
-chown -R ${NEW_USER} ${NEW_HOME}
-
-<% if_p("shell.env.repo") do |env_repo| %>
-
-ENV_REPO="<%= env_repo %>"
-
-log "Setting up ${NEW_USER} environment"
-if [[ ! -d ${NEW_HOME}/env ]]; then
-  log "Environment repo ${NEW_HOME}/env not found; cloning from upstream"
-  git clone ${ENV_REPO} ${NEW_HOME}/env
-
-  log "Running install script form inside of ${NEW_HOME}/env, as ${NEW_USER} with HOME=${NEW_HOME}"
-  (cd ${NEW_HOME}/env
-   export HOME=${NEW_HOME}
-   export USER=${NEW_USER}
-   [ -x ./install ] && ./install || true)
-fi
-
+<% if p('shell.user.account') != '' %>
+# deprecated shell.user.* stuff
+newuser "<%= p('shell.user.account') %>" \
+        "<%= p('shell.user.shell') %>" \
+        "<%= p('shell.env.repo') %>"<% if !p('p.shell.user.ssh_keys', []).empty? %> \<% end %>
+       <% p('p.shell.user.ssh_keys', []).each do |k| %> "<%= k %>"<% end %>
 <% end %>
 
-chown -R ${NEW_USER} ${NEW_HOME}
+<% p('shell.users').each do |user| %>
+# shell.users[<%= user['name'] %>
+newuser "<%= user['name'] %>" \
+        "<%= user['shell'] %>" \
+        "<%= user['env'] %>"<% if !(user['ssh_keys'] || []).empty? %> \<% end %>
+       <% (user['ssh_keys'] || []).each do |k| %> "<%= k %>"<% end %>
+<% end %>
+
 touch /var/vcap/sys/run/shell
 log "Done"
