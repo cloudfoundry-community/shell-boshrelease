@@ -34,7 +34,7 @@ properties:
       List of users to create
       - name: jhunt
         shell: /bin/bash
-        env: https://github.com/filefrog/env.git
+        env: https://github.com/jhunt/devbox-env.git
         ssh_keys:
           - ssh-rsa AAAAB3NzaC1yabcd
           - ssh-rsa AAAAB3NzaC1y1234
