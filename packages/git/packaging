@@ -15,6 +15,16 @@ export HOME=/var/vcap
 #        and then repack the tarball for this to work.)
 #
 
+# ALSO
+# NOTE: I don't care if this is a terrible way to do BOSH release packaging;
+#       the CentOS stemcell apparently doesn't ship with the same baseline
+#       functionality as the Ubuntu stemcell, so we're forced to install
+#       perl-devel here.
+if [[ -n "$(command -v yum)" ]]; then
+  echo "on CentOS; installing perl-devel base package"
+  yum install perl-devel
+fi
+
 tar xzf git/git-2.7.0.tar.gz
 (cd git-2.7.0
  ./configure --prefix=${BOSH_INSTALL_TARGET}
