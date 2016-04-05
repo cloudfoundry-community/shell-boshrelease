@@ -12,9 +12,10 @@ log() {
 }
 
 newuser() {
-  user=$1  ; shift
-  shell=$1 ; shift
-  repo=$1  ; shift
+  user=$1         ; shift
+  shell=$1        ; shift
+  repo=$1         ; shift
+  setup_script=$1 ; shift
 
   home="/home/${user}"
   [ -z ${shell} ] && shell="/bin/bash"
@@ -51,11 +52,14 @@ newuser() {
       log "Environment repo ${home}/env not found; cloning from upstream"
       git clone ${repo} ${home}/env
 
-      log "Running install script form inside of ${home}/env, as ${user} with HOME=${home}"
+      log "Running install script from inside of ${home}/env, as ${user} with HOME=${home}"
       (cd ${home}/env
        export HOME=${home}
        export USER=${user}
        [ -x ./install ] && ./install || true)
+
+   log "Running setup script ('${setup_script}') from inside of ${home}/env, as ${user} with HOME=${home}"
+      (sudo -iu ${user} bash -c "[ -x ${setup_script} ] && ${setup_script} || true" )
     fi
   fi
 
@@ -87,7 +91,8 @@ newuser "<%= p('shell.user.account') %>" \
 # shell.users[<%= user['name'] %>
 newuser "<%= user['name'] %>" \
         "<%= user['shell'] %>" \
-        "<%= user['env'] %>"<% if !(user['ssh_keys'] || []).empty? %> \<% end %>
+        "<%= user['env'] %>" \
+		"<%= user['setup_script'] %>"<% if !(user['ssh_keys'] || []).empty? %> \<% end %>
        <% (user['ssh_keys'] || []).each do |k| %> "<%= k %>"<% end %>
 <% end %>
 
