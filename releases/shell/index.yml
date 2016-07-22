@@ -8,4 +8,6 @@ builds:
     version: '3'
   feb54971-ffd7-4e4a-a09b-c27210e5f66b:
     version: 3.1.0
+  6d64d661-01df-4a86-a734-d5cfd80effc0:
+    version: 3.2.0
 format-version: '2'
